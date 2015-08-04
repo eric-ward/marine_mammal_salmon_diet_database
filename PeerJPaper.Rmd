@@ -1,0 +1,249 @@
+---
+title: A century of Chinook salmon consumption by marine mammal predators in the Northeast Pacific Ocean
+author: "Jesse Adams et al."
+date: "08-01-2015"
+output:
+  pdf_document:
+    fig_caption: yes
+  html_document: default
+  word_document: default
+---
+
+## Loading in the data
+```{r, warning=FALSE}
+#setwd("/users/eric.ward/dropbox/PSC project 2015/PeerJ paper")
+# Try readxl package
+if("readxl" %in% rownames(installed.packages()) == FALSE) {
+  devtools::install_github("hadley/readxl")}
+require(readxl)
+diets = read_excel("Consumption spreadsheet_noThomas.xlsx")
+```
+
+## Meta-analysis
+
+First we need to convert percentages to be in 0-1 range:
+```{r}
+diets$Percent_chinook = as.numeric(diets$Percent_chinook)/100
+diets$Percent_salmon = as.numeric(diets$Percent_salmon)/100
+```
+
+```{r, warning=FALSE}
+
+# Harbor seal
+totalSampleSize = diets$Sample_size
+N = dim(diets)[1]
+totalSalmon = round(totalSampleSize*diets$Percent_salmon)
+totalChinook = round(totalSampleSize*diets$Percent_chinook)
+indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
+    diets$Species == "Harbor Seal" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalSalmon[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+p.hs = rep(NA,10000)
+if(class(g)!="try-error") p.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
+    diets$Species == "Harbor Seal" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalChinook[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+pch.hs = rep(NA,10000)
+if(class(g)!="try-error") pch.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
+    diets$Species == "Steller Sea lion" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalSalmon[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+p.ssl = rep(NA,10000)
+if(class(g)!="try-error") p.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
+    diets$Species == "Steller Sea lion" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalChinook[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+pch.ssl = rep(NA,10000)
+if(class(g)!="try-error") pch.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
+    diets$Species == "California Sea Lion" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalSalmon[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+p.csl = rep(NA,10000)
+if(class(g)!="try-error") p.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
+    diets$Species == "California Sea Lion" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalChinook[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+pch.csl = rep(NA,10000)
+if(class(g)!="try-error") pch.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
+    diets$Species == "Killer Whale" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalSalmon[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+p.kw = rep(NA,10000)
+if(class(g)!="try-error") p.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
+    diets$Species == "Killer Whale" & diets$Count_type == "FO")
+y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)), 
+    totalSampleSize[indx]-totalChinook[indx]))
+g = try(glm(y ~ 1, family="binomial"),silent=T)
+pch.kw = rep(NA,10000)
+if(class(g)!="try-error") pch.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+```
+
+Using the values simulated from the distributions above, we can then generate distriubtions of the global frequency of occurrence, by species. Note that these estimates are aggregating across space and time.
+
+```{r, echo = FALSE, warning=FALSE, fig.pos="placeHere", fig.cap = "Estimated FO of total salmon by species, across all regions and years"}
+ilogit = function(x) {return(exp(x)/(1+exp(x)))}
+#pdf("FO Chinook.pdf")
+par(mfrow = c(2,2), mgp = c(2,1,0),mai=c(0.7,0.7,0.25,0.05))
+try(hist(ilogit(pch.hs),40,xlab="FO of Chinook", col = rgb(255, 99, 71, alpha = 150,maxColorValue=255),
+         main="Harbor seal"),silent=T)
+try(hist(ilogit(pch.ssl),40,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+         main="Steller sea lion"),silent=T)
+try(hist(ilogit(pch.csl),20,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+         main="California sea lion"),silent=T)
+try(hist(ilogit(pch.kw),20,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+         main="Killer whale"),silent=T)
+#dev.off()
+```
+
+```{r, echo = FALSE, warning=FALSE, fig.pos="placeHere", fig.cap = "Estimated FO of Chinook salmon by species, across all regions and years"}
+#pdf("FO Salmon.pdf")
+par(mfrow = c(2,2), mgp = c(2,1,0),mai=c(0.7,0.7,0.25,0.05))
+try(hist(ilogit(p.hs),25,xlab="FO of salmon", col = rgb(255, 192, 203, alpha = 150,maxColorValue=255),
+         main="Harbor seal"),silent=T)
+try(hist(ilogit(p.ssl),30,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+         main="Steller sea lion"),silent=T)
+try(hist(ilogit(p.csl),40,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+         main="California sea lion"),silent=T)
+try(hist(ilogit(p.kw),40,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+         main="Killer whale"),silent=T)
+#dev.off()
+```
+
+As a second analysis, we can examine the support for a time trend in the reporting of Chinook in marine mammal diets. This is potentially confounded with both (1) and relative changes in Chinook and other potential prey items, and (2) any diet switching. Each of the studies in our database can be scored as "0" (didn't report Chinook) or "1" (reported Chinook) and we can fit Binomial GLMs to those data to examine support for temporal trends. 
+
+```{r, warning=FALSE}
+diets$reportChinook = ceiling(diets$Percent_chinook)
+diets$reportChinook[which(is.na(diets$reportChinook))] = 0
+```
+
+We'll use the mid-point (years) of each study as the temporal predictor. 
+```{r, warning=FALSE}
+diets$midPoint = (diets$Year_End + diets$Year_Start)/2
+```
+
+We'll restrict the analysis to only studies that include a single predator species, but our model will allow for species-specific intercepts (allowing reporting by species to vary, in part because Chinook plays a different role in the diet of each).
+
+```{r, warning=FALSE}
+g = glm(reportChinook ~ -1+midPoint + Species, family = "binomial", 
+data = diets[which(diets$Species%in%c("Steller Sea lion","California Sea Lion",
+"Killer Whale","Harbor Seal")),])
+summary(g)
+```
+
+We can create a new data frame and make predictions from this to make plots of the temporal patterns by species. To do this, 
+```{r, warning=FALSE}
+newdata = expand.grid(midPoint = seq(1970,2015), 
+Species=c("Steller Sea lion","California Sea Lion","Killer Whale","Harbor Seal"))
+```
+
+To predict with this new data frame, 
+
+```{r, warning=FALSE}
+newdata$pred = predict(g, newdata = newdata, type="response")
+```
+
+And we can plot these trends on the same panel
+
+```{r, warning=FALSE, fig.cap = "Estimated time trend of studies reporting Chinook salmon in marine mammal diets, across all regions and seasons"}
+#pdf("Temporal trend.pdf")
+Yrs = seq(1970,2015)
+plot(Yrs, newdata$pred[which(newdata$Species=="Harbor Seal")], type="l", 
+     col= "red",ylim=c(0, 1), xlab="", ylab="Probability of studies reporting Chinook",lwd=2)
+lines(Yrs, newdata$pred[which(newdata$Species=="Steller Sea lion")], col= "brown",lwd=2)
+lines(Yrs, newdata$pred[which(newdata$Species=="California Sea Lion")], col= "gold",lwd=2)
+lines(Yrs, newdata$pred[which(newdata$Species=="Killer Whale")], col= "black",lwd=2)
+legend("topleft",c("Harbor Seal","Steller Sea lion","California Sea Lion","Killer Whale"),
+lwd=2,col=c("red","brown","gold","black"),cex=0.8,bty='n')
+#dev.off()
+```
+
+To examine whether this temporal trend is in part due to shifts in scientific technology (e.g. genetic or molecular methods), we can also try to split out whether or not studies include DNA, and use that as predictors. 
+
+```{r, warning=FALSE}
+diets$DNA = 0
+for(i in 1:dim(diets)[1]) {
+  if(length(grep("DNA",diets$Diet_data[i]))>0) diets$DNA[i] = 1
+}
+```
+
+Now we can re-fit the GLM with DNA as a predictor,
+```{r, warning=FALSE}
+g = glm(reportChinook ~ -1+DNA + midPoint + Species, family = "binomial", 
+data = diets[which(diets$Species%in%c("Steller Sea lion","California Sea Lion",
+"Killer Whale","Harbor Seal")),])
+```
+The AIC value of this model actually apprears worse than the model above without DNA as a predictor, and the coefficient isn't signicificant, so the simpler model seems to be more supported.
+
+
+```{r}
+
+x = read.table("areaCoords.dat", header=TRUE)
+sx = read.table("speciesdistribution.dat", header=TRUE)
+sxnew = sx[sx$SP!="x",]
+library(maps)
+library(mapproj)
+library(mapdata)
+par(mai=c(0,0,0,0), fig=c(0,1,0,1))
+map('world', 'usa', xlim=c(-150,-115), ylim=c(35,60), xaxs="i", yaxs="i", fill=TRUE, col='white')
+
+icnt = 1
+for(i in levels(x$Area)[1:6])
+{
+    polygon(x[x$Area==i,2:3], col=icnt)  
+    icnt = icnt + 1
+}
+
+map('world', 'usa', xlim=c(-150,-115), ylim=c(30,75), xaxs="i", yaxs="i", fill=TRUE, add=TRUE, col='white')
+
+map('world', 'canada', add=TRUE, xlim=c(-150,-110), ylim=c(30,60), xaxs="i", yaxs="i", col='white', fill=TRUE)
+
+
+map('state', region=c('washington'), add=TRUE, xlim=c(-150,-115), ylim=c(30,65), fill=TRUE, col=c('white'), xaxs="i", yaxs="i")
+map('state', region=c('oregon'), add=TRUE, xlim=c(-150,-115), ylim=c(30,65), fill=TRUE, col=c('white'), xaxs="i", yaxs="i")
+map('state', region=c('california'), add=TRUE, xlim=c(-150,-115), ylim=c(30,65), fill=TRUE, col=c('white'), xaxs="i", yaxs="i")
+#map('state', region=c('idaho', 'nevada', 'montana', #'arizona','utah', 'wyoming'), add=TRUE, xlim=c(-150,-115), #ylim=c(30,65), fill=TRUE, col=c('white'), xaxs="i", yaxs="i")
+
+icnt = 1
+  par(mgp=c(2,0.25,0))
+for(i in levels(x$Area)[1:6])
+{
+    par(fig=c(0.1,0.25,0.1+(icnt-1)/7,0.1+(icnt)/7-0.05), mai=c(0,0,0,0), new=TRUE)
+    barplot(table(sxnew$SP[sxnew$Region==i])[1:4],
+            horiz = TRUE, xlim=c(0,75), las=1, axes=FALSE, space=0, cex.names=0.9, cex.axis=0.65, col=icnt)
+      axis(1, cex.axis=0.75)
+    icnt = icnt + 1
+}
+par(fig=c(0,1,0,1))
+box()
+par(fig=c(0.5,1,0.5,1),mai=c(0,0,0,0), new=TRUE, bg="transparent")
+map(xlim=c(-180,-105), ylim=c(20,80), xaxs="i", yaxs="i", lwd=0.5, col="grey")
+rect(-135,30,-115,60, lwd=2)
+
+```
+```{r}
+par(fig=c(0.5,1,0.5,1),mai=c(0,0,0,0), new=TRUE, bg="transparent")
+map(xlim=c(-180,-105), ylim=c(20,80), xaxs="i", yaxs="i", lwd=0.5, col="grey")
+rect(-135,30,-115,60, lwd=2)
+
+```
