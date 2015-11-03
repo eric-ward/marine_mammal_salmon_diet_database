@@ -16,6 +16,7 @@ output:
 if("readxl" %in% rownames(installed.packages()) == FALSE) {
   devtools::install_github("hadley/readxl")}
 require(readxl)
+require(knitr)
 diets = read_excel("Consumption spreadsheet_noThomas.xlsx")
 ```
 
@@ -28,7 +29,7 @@ diets$Percent_salmon = as.numeric(diets$Percent_salmon)/100
 ```
 
 ```{r, warning=FALSE}
-
+ilogit = function(x) {return(exp(x)/(1+exp(x)))}
 # Harbor seal
 totalSampleSize = diets$Sample_size
 N = dim(diets)[1]
@@ -40,7 +41,7 @@ y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalSalmon[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 p.hs = rep(NA,10000)
-if(class(g)!="try-error") p.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1]!="try-error") p.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
     diets$Species == "Harbor Seal" & diets$Count_type == "FO")
@@ -48,7 +49,7 @@ y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalChinook[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 pch.hs = rep(NA,10000)
-if(class(g)!="try-error") pch.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1]!="try-error") pch.hs = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
     diets$Species == "Steller Sea lion" & diets$Count_type == "FO")
@@ -56,7 +57,7 @@ y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalSalmon[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 p.ssl = rep(NA,10000)
-if(class(g)!="try-error") p.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1]!="try-error") p.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
     diets$Species == "Steller Sea lion" & diets$Count_type == "FO")
@@ -64,7 +65,7 @@ y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalChinook[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 pch.ssl = rep(NA,10000)
-if(class(g)!="try-error") pch.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1] !="try-error") pch.ssl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
     diets$Species == "California Sea Lion" & diets$Count_type == "FO")
@@ -72,7 +73,7 @@ y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalSalmon[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 p.csl = rep(NA,10000)
-if(class(g)!="try-error") p.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1] !="try-error") p.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
     diets$Species == "California Sea Lion" & diets$Count_type == "FO")
@@ -80,7 +81,7 @@ y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalChinook[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 pch.csl = rep(NA,10000)
-if(class(g)!="try-error") pch.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1] !="try-error") pch.csl = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalSalmon+totalSampleSize)==FALSE & 
     diets$Species == "Killer Whale" & diets$Count_type == "FO")
@@ -88,7 +89,7 @@ y = c(rep(rep(1,length(indx)), totalSalmon[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalSalmon[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 p.kw = rep(NA,10000)
-if(class(g)!="try-error") p.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1] !="try-error") p.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
 
 indx = which(is.na(totalChinook+totalSampleSize)==FALSE & 
     diets$Species == "Killer Whale" & diets$Count_type == "FO")
@@ -96,7 +97,25 @@ y = c(rep(rep(1,length(indx)), totalChinook[indx]),rep(rep(0,length(indx)),
     totalSampleSize[indx]-totalChinook[indx]))
 g = try(glm(y ~ 1, family="binomial"),silent=T)
 pch.kw = rep(NA,10000)
-if(class(g)!="try-error") pch.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+if(class(g)[1]!="try-error") pch.kw = rnorm(10000, coef(summary(g))[1], coef(summary(g))[2])
+
+m = matrix(NA, 4, 3)
+m[1,] = round(c(mean(ilogit(p.hs)), quantile(ilogit(p.hs),c(0.025,0.975))),3)
+m[2,] = round(c(mean(ilogit(p.ssl)), quantile(ilogit(p.ssl),c(0.025,0.975))),3)
+m[3,] = round(c(mean(ilogit(p.csl)), quantile(ilogit(p.csl),c(0.025,0.975))),3)
+m[4,] = round(c(mean(ilogit(p.kw)), quantile(ilogit(p.kw),c(0.025,0.975))),3)
+rownames(m) = c("HS","SSL","CSL","KW")
+colnames(m) = c("Mean.salmon","Lower95.salmon","Upper95.salmon")
+kable(m)
+
+m = matrix(NA, 4, 3)
+m[1,] = round(c(mean(ilogit(pch.hs)), quantile(ilogit(pch.hs),c(0.025,0.975))),3)
+m[2,] = round(c(mean(ilogit(pch.ssl)), quantile(ilogit(pch.ssl),c(0.025,0.975))),3)
+m[3,] = round(c(mean(ilogit(pch.csl)), quantile(ilogit(pch.csl),c(0.025,0.975))),3)
+m[4,] = round(c(mean(ilogit(pch.kw)), quantile(ilogit(pch.kw),c(0.025,0.975))),3)
+rownames(m) = c("HS","SSL","CSL","KW")
+colnames(m) = c("Mean.chinook","Lower95.chinook","Upper95.chinook")
+kable(m)
 ```
 
 Using the values simulated from the distributions above, we can then generate distriubtions of the global frequency of occurrence, by species. Note that these estimates are aggregating across space and time.
@@ -105,13 +124,13 @@ Using the values simulated from the distributions above, we can then generate di
 ilogit = function(x) {return(exp(x)/(1+exp(x)))}
 #pdf("FO Chinook.pdf")
 par(mfrow = c(2,2), mgp = c(2,1,0),mai=c(0.7,0.7,0.25,0.05))
-try(hist(ilogit(pch.hs),40,xlab="FO of Chinook", col = rgb(255, 99, 71, alpha = 150,maxColorValue=255),
+try(hist(ilogit(pch.hs),40,xlab="Estimated FO of Chinook", col = rgb(255, 99, 71, alpha = 150,maxColorValue=255),
          main="Harbor seal"),silent=T)
-try(hist(ilogit(pch.ssl),40,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(pch.ssl),40,xlab="Estimated FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
          main="Steller sea lion"),silent=T)
-try(hist(ilogit(pch.csl),20,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(pch.csl),20,xlab="Estimated FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
          main="California sea lion"),silent=T)
-try(hist(ilogit(pch.kw),20,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(pch.kw),20,xlab="Estimated FO of Chinook",col = rgb(255, 99, 71, alpha = 150,maxColorValue=255), 
          main="Killer whale"),silent=T)
 #dev.off()
 ```
@@ -119,13 +138,13 @@ try(hist(ilogit(pch.kw),20,xlab="FO of Chinook",col = rgb(255, 99, 71, alpha = 1
 ```{r, echo = FALSE, warning=FALSE, fig.pos="placeHere", fig.cap = "Estimated FO of Chinook salmon by species, across all regions and years"}
 #pdf("FO Salmon.pdf")
 par(mfrow = c(2,2), mgp = c(2,1,0),mai=c(0.7,0.7,0.25,0.05))
-try(hist(ilogit(p.hs),25,xlab="FO of salmon", col = rgb(255, 192, 203, alpha = 150,maxColorValue=255),
+try(hist(ilogit(p.hs),25,xlab="Estimated FO of salmon", col = rgb(255, 192, 203, alpha = 150,maxColorValue=255),
          main="Harbor seal"),silent=T)
-try(hist(ilogit(p.ssl),30,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(p.ssl),30,xlab="Estimated FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
          main="Steller sea lion"),silent=T)
-try(hist(ilogit(p.csl),40,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(p.csl),40,xlab="Estimated FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
          main="California sea lion"),silent=T)
-try(hist(ilogit(p.kw),40,xlab="FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
+try(hist(ilogit(p.kw),40,xlab="Estimated FO of salmon",col = rgb(255, 192, 203, alpha = 150,maxColorValue=255), 
          main="Killer whale"),silent=T)
 #dev.off()
 ```
@@ -149,6 +168,11 @@ g = glm(reportChinook ~ -1+midPoint + Species, family = "binomial",
 data = diets[which(diets$Species%in%c("Steller Sea lion","California Sea Lion",
 "Killer Whale","Harbor Seal")),])
 summary(g)
+
+m = matrix(NA, length(coef(g)), 2)
+m = round(coef(summary(g))[,1:2],4)
+colnames(m) = c("Estimate","SE")
+kable(m)
 ```
 
 We can create a new data frame and make predictions from this to make plots of the temporal patterns by species. To do this, 
